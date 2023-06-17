@@ -415,6 +415,11 @@ macro_rules! gdext_virtual_method_callback_inner {
                 args: *const sys::GDExtensionConstTypePtr,
                 ret: sys::GDExtensionTypePtr,
             ) {
+                if ::godot::sys::skip_in_editor() {
+                    eprintln!("> skip {}::{}", stringify!($Class), stringify!($method_name));
+                    return; // UB
+                }
+
                 $crate::gdext_ptrcall!(
                     $ptrcall;
                     instance_ptr, args, ret;

@@ -14,8 +14,15 @@ pub unsafe fn __gdext_load_library<E: ExtensionLibrary>(
     library: sys::GDExtensionClassLibraryPtr,
     init: *mut sys::GDExtensionInitialization,
 ) -> sys::GDExtensionBool {
+    // TODO(bromeon): sys-level function for is_editor_hint
+
+    let config = sys::GdextConfig {
+        is_editor_allowed: E::run_in_editor(),
+        runs_in_editor: crate::engine::Engine::singleton().is_editor_hint(),
+    };
+
     let init_code = || {
-        sys::initialize(interface_or_get_proc_address, library);
+        sys::initialize(interface_or_get_proc_address, library, config);
 
         let mut handle = InitHandle::new();
 
@@ -120,6 +127,10 @@ pub unsafe trait ExtensionLibrary {
     fn load_library(handle: &mut InitHandle) -> bool {
         handle.register_layer(InitLevel::Scene, DefaultLayer);
         true
+    }
+
+    fn run_in_editor() -> bool {
+        false
     }
 }
 

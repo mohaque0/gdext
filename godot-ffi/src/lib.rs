@@ -70,7 +70,13 @@ struct GodotBinding {
     interface: GDExtensionInterface,
     library: GDExtensionClassLibraryPtr,
     method_table: GlobalMethodTable,
+    config: GdextConfig,
     runtime_metadata: GdextRuntimeMetadata,
+}
+
+pub struct GdextConfig {
+    pub is_editor_allowed: bool,
+    pub runs_in_editor: bool,
 }
 
 struct GdextRuntimeMetadata {
@@ -90,7 +96,11 @@ static mut BINDING: Option<GodotBinding> = None;
 /// - The `library` pointer must be the pointer given by Godot at initialisation.
 /// - This function must not be called from multiple threads.
 /// - This function must be called before any use of [`get_library`].
-pub unsafe fn initialize(compat: InitCompat, library: GDExtensionClassLibraryPtr) {
+pub unsafe fn initialize(
+    compat: InitCompat,
+    library: GDExtensionClassLibraryPtr,
+    config: GdextConfig,
+) {
     out!("Initialize gdext...");
 
     out!(
@@ -118,6 +128,7 @@ pub unsafe fn initialize(compat: InitCompat, library: GDExtensionClassLibraryPtr
         interface,
         method_table,
         library,
+        config,
         runtime_metadata,
     });
     out!("Assigned binding.");
@@ -167,6 +178,12 @@ pub unsafe fn method_table() -> &'static GlobalMethodTable {
 #[inline(always)]
 pub(crate) unsafe fn runtime_metadata() -> &'static GdextRuntimeMetadata {
     &BINDING.as_ref().unwrap().runtime_metadata
+}
+
+#[inline(always)]
+pub unsafe fn skip_in_editor() -> bool {
+    let config = &unwrap_ref_unchecked(&BINDING).config;
+    config.runs_in_editor && !config.is_editor_allowed
 }
 
 /// Makes sure that Godot is running, or panics. Debug mode only!
