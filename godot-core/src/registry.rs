@@ -160,6 +160,13 @@ pub fn register_class<
 pub fn auto_register_classes() {
     out!("Auto-register classes...");
 
+    if unsafe { sys::skip_in_editor() } {
+        println!("Detected editor; do not load Rust extension.");
+        return;
+    } else {
+        println!("Do not skip");
+    }
+
     // Note: many errors are already caught by the compiler, before this runtime validation even takes place:
     // * missing #[derive(GodotClass)] or impl GodotClass for T
     // * duplicate impl GodotInit for T
