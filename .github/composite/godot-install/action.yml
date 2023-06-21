@@ -42,11 +42,14 @@ runs:
 #      if: steps.cache-godot.outputs.cache-hit != 'true'
       # If a specific Godot revision should be used, rather than latest, use this:
       # curl https://nightly.link/Bromeon/godot4-nightly/actions/runs/4910907653/${{ inputs.artifact-name }}.zip \
+
       run: |
         if [[ $ARTIFACT_NAME == *"stable"* ]]; then
-          url="https://nightly.link/Bromeon/godot4-nightly/workflows/compile-godot-stable/master/$ARTIFACT_NAME.zip"
+          #url="https://nightly.link/Bromeon/godot4-nightly/actions/runs/5337810565/$ARTIFACT_NAME.zip"
+          url="https://nightly.link/Bromeon/godot4-nightly/workflows/compile-godot-stable/direct-stringname/$ARTIFACT_NAME.zip"
         else
-          url="https://nightly.link/Bromeon/godot4-nightly/workflows/compile-godot-nightly/master/$ARTIFACT_NAME.zip"
+          #url="https://nightly.link/Bromeon/godot4-nightly/actions/runs/5337810562/$ARTIFACT_NAME.zip"
+          url="https://nightly.link/Bromeon/godot4-nightly/workflows/compile-godot-nightly/direct-stringname/$ARTIFACT_NAME.zip"
         fi
         
         curl "$url" -Lo artifact.zip --retry 3
