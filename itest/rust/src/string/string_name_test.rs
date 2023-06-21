@@ -109,3 +109,12 @@ fn string_name_is_empty() {
     let empty = StringName::default();
     assert!(empty.is_empty());
 }
+
+#[cfg(not(gdextension_api = "4.0"))]
+fn string_name_static_cstr() {
+    // TODO consider UTF-8, e.g. string "¾ is almost full\0" (adjust constructor)
+    let a = StringName::static_ascii_cstr(b"an ASCII string\0");
+    let b = StringName::from("an ASCII string");
+
+    assert_eq!(a, b);
+}

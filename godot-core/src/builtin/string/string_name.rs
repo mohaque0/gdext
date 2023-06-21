@@ -7,11 +7,10 @@
 use godot_ffi as sys;
 use sys::{ffi_methods, GodotFfi};
 
-use std::fmt;
-
 use crate::builtin::inner;
+use crate::builtin::{GodotString, NodePath};
 
-use super::{GodotString, NodePath};
+use std::fmt;
 
 /// A string optimized for unique names.
 ///
@@ -25,6 +24,36 @@ pub struct StringName {
 impl StringName {
     fn from_opaque(opaque: sys::types::OpaqueStringName) -> Self {
         Self { opaque }
+    }
+
+    /// Creates a `StringName` from a null-terminated `b"string"` literal.
+    ///
+    /// Avoids unnecessary copies and allocations and directly uses the backing buffer. Useful for literals.
+    ///
+    /// # Panics
+    /// When the string is not ASCII or not null-terminated.
+    #[cfg(not(gdextension_api = "4.0"))]
+    pub fn static_ascii_cstr(string: &'static [u8]) -> Self {
+        assert!(string.is_ascii());
+
+        let c_str = std::ffi::CStr::from_bytes_with_nul(string)
+            .unwrap_or_else(|_| panic!("invalid or not null-terminated CStr: '{string:?}'"));
+
+        let result = unsafe {
+            Self::from_string_sys_init(|ptr| {
+                sys::interface_fn!(string_name_new_with_utf8_chars)(
+                    ptr,
+                    c_str.as_ptr(),
+                    true as sys::GDExtensionBool,
+                )
+            })
+        };
+
+        // StringName expects that the destructor is not invoked on static instances (or only at global exit; see SNAME(..) macro in Godot).
+        // According to testing with godot4 --verbose, there is no mention of "Orphan StringName" at shutdown when incrementing the ref-count,
+        // so this should not leak memory.
+        result.inc_ref();
+        result
     }
 
     /// Returns the number of characters in the string.
@@ -63,6 +92,11 @@ impl StringName {
     pub fn as_inner(&self) -> inner::InnerStringName {
         inner::InnerStringName::from_outer(self)
     }
+
+    /// Increment ref-count. This may leak memory if used wrongly.
+    fn inc_ref(&self) {
+        std::mem::forget(self.clone());
+    }
 }
 
 // SAFETY:
@@ -84,7 +118,7 @@ unsafe impl GodotFfi for StringName {
 
     unsafe fn from_arg_ptr(ptr: sys::GDExtensionTypePtr, _call_type: sys::PtrcallType) -> Self {
         let string_name = Self::from_sys(ptr);
-        std::mem::forget(string_name.clone());
+        string_name.inc_ref();
         string_name
     }
 
