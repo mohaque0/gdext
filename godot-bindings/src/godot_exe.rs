@@ -72,7 +72,7 @@ pub fn write_gdextension_headers(
         // }
     };
 
-    rerun_on_changed(inout_h_path);
+    // rerun_on_changed(inout_h_path);
     patch_c_header(inout_h_path, is_engine_4_0);
     watch.record("patch_header_h");
 
@@ -262,7 +262,7 @@ fn polyfill_legacy_header(c: &mut String) {
 pub(crate) fn locate_godot_binary() -> PathBuf {
     if let Ok(string) = std::env::var("GODOT4_BIN") {
         println!("Found GODOT4_BIN with path to executable: '{string}'");
-        println!("cargo:rerun-if-env-changed=GODOT4_BIN");
+        // println!("cargo:rerun-if-env-changed=GODOT4_BIN");
         PathBuf::from(string)
     } else if let Ok(path) = which::which("godot4") {
         println!("Found 'godot4' executable in PATH: {}", path.display());
@@ -300,5 +300,5 @@ fn execute(mut cmd: Command, error_message: &str) -> Output {
 }
 
 fn rerun_on_changed(path: &Path) {
-    println!("cargo:rerun-if-changed={}", path.display());
+    // println!("cargo:rerun-if-changed={}", path.display());
 }
