@@ -91,6 +91,8 @@ fn collect_inputs() -> Vec<Input> {
 }
 
 fn main() {
+    godot_bindings::emit_godot_version_cfg();
+
     let inputs = collect_inputs();
     let methods = generate_rust_methods(&inputs);
 

@@ -17,5 +17,6 @@ default = []
 godot = { path = "../../godot", default-features = false }
 
 [build-dependencies]
+godot-bindings = { path = "../../godot-bindings" } # emit_godot_version_cfg
 quote = "1"
 proc-macro2 = "1"
