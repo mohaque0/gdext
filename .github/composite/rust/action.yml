@@ -38,9 +38,12 @@ runs:
         cs: ${{ inputs.components }}
       shell: bash
 
+      # Spurious failures for rustup:
+      #   info: update not yet available, sorry! try again later
+      #   error: toolchain 'nightly-x86_64-unknown-linux-gnu' is not installable
     - name: "Rustup"
       run: |
-        rustup toolchain install ${{ inputs.rust }} --profile minimal --no-self-update ${{ steps.configure.outputs.components }}
+        $RETRY rustup toolchain install ${{ inputs.rust }} --profile minimal --no-self-update ${{ steps.configure.outputs.components }}
         rustup default ${{ inputs.rust }}
       shell: bash
 
